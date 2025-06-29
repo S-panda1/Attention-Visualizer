@@ -1,4 +1,4 @@
-# Attention Visualizer
+# GPT-2 Attention Visualizer
 
 This project is a web-based tool for visualizing token-level attention patterns in transformer-based language models like GPT-2. It allows users to input custom text and explore how attention flows between tokens across all layers and heads.
 
