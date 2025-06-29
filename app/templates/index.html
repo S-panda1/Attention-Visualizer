@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Attention Graph Visualization</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <div id="main-app">
+    <div id="visualization-container">
+      <div id="visualization">
+        <div class="visualization-placeholder">
+          <p>Enter text and click "Analyze" to view attention patterns</p>
+        </div>
+      </div>
+
+      <div class="control-panel" id="input-panel">
+        <div class="panel-header">
+          <h2>Attention Graph</h2>
+        </div>
+        <div class="input-group">
+          <textarea id="input-text"
+                    placeholder="Enter text to analyze (max 100 tokens)...">Once upon a time the world was a land of darkness, and the darkness was the light of the sun.</textarea>
+          <div class="input-actions">
+            <button id="analyze-btn">Analyze</button>
+          </div>
+        </div>
+        <div id="loading" class="hidden">Analyzing... This may take a moment.</div>
+        <div id="error-message" class="hidden"></div>
+      </div>
+
+      <div class="visualization-tools hidden" id="tools-panel">
+        <div class="panel-header">
+          <h3>Visualization Controls</h3>
+        </div>
+        <div class="tool-section">
+          <div class="threshold-control">
+            <label for="threshold-slider">Attention Threshold:</label>
+            <div class="slider-with-value">
+              <input type="range" id="threshold-slider" min="0" max="1" step="0.01" value="0.98" />
+              <span id="threshold-value">0.98</span>
+            </div>
+          </div>
+          <div id="head-toggles" class="compact-toggles"></div>
+        </div>
+        <div class="tool-section help-text">
+          <p><strong>Click node</strong>: Focus on connections | <strong>Hover strand</strong>: View details</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='visualizer.js') }}"></script>
+  <script>
+    function showLoading() {
+      document.getElementById('loading').classList.remove('hidden');
+    }
+    function hideLoading() {
+      document.getElementById('loading').classList.add('hidden');
+    }
+    function showError(msg) {
+      const e = document.getElementById('error-message');
+      e.textContent = msg;
+      e.classList.remove('hidden');
+    }
+
+    function analyzeText(text) {
+      document.getElementById('visualization').innerHTML = '';
+      document.getElementById('tools-panel').classList.add('hidden');
+      showLoading();
+
+      fetch('/api/attention', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) throw new Error(data.error);
+          initializeGridVisualization(data);
+          hideLoading();
+          document.querySelector('.visualization-tools').classList.remove('hidden');
+        })
+        .catch(err => {
+          console.error("Error analyzing text:", err);
+          showError("Failed to analyze text.");
+          hideLoading();
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('analyze-btn').addEventListener('click', () => {
+        const txt = document.getElementById('input-text').value.trim();
+        if (!txt) return showError('Please enter some text.');
+        analyzeText(txt);
+      });
+
+      const slider = document.getElementById('threshold-slider');
+      const valueDisplay = document.getElementById('threshold-value');
+      if (slider && valueDisplay) {
+        slider.addEventListener('input', () => {
+          valueDisplay.textContent = parseFloat(slider.value).toFixed(2);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
