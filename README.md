@@ -2,7 +2,7 @@
 
 This project is a web-based tool for visualizing token-level attention patterns in transformer-based language models like GPT-2. It allows users to input custom text and explore how attention flows between tokens across all layers and heads.
 
-![Screenshot](./screenshots/demo.png) <!-- Add screenshot if available -->
+![Screenshot](th.jpg) <!-- Add screenshot if available -->
 
 ## 🔍 Features
 - Visualizes token-to-token attention using interactive D3.js graphs
