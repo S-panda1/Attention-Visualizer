@@ -18,11 +18,10 @@
 
       <div class="control-panel" id="input-panel">
         <div class="panel-header">
-          <h2>Attention Graph</h2>
+          <h2>Attention Visualizer</h2>
         </div>
         <div class="input-group">
-          <textarea id="input-text"
-                    placeholder="Enter text to analyze (max 100 tokens)...">Once upon a time the world was a land of darkness, and the darkness was the light of the sun.</textarea>
+          <textarea id="input-text" placeholder="Enter text to analyze (max 100 tokens)...">It has been a nice day so far, but not sure about the rest.</textarea>
           <div class="input-actions">
             <button id="analyze-btn">Analyze</button>
           </div>
@@ -54,6 +53,29 @@
 
   <script src="{{ url_for('static', filename='visualizer.js') }}"></script>
   <script>
+    function makeDraggable(element, handle) {
+      let startX, startY, origX, origY;
+      handle.style.cursor = 'move';
+      handle.addEventListener('mousedown', e => {
+        e.preventDefault();
+        startX = e.clientX; startY = e.clientY;
+        const rect = element.getBoundingClientRect();
+        origX = rect.left; origY = rect.top;
+        document.addEventListener('mousemove', onDrag);
+        document.addEventListener('mouseup', stopDrag);
+      });
+      function onDrag(e) {
+        const dx = e.clientX - startX, dy = e.clientY - startY;
+        element.style.position = 'absolute';
+        element.style.left = origX + dx + 'px';
+        element.style.top  = origY + dy + 'px';
+      }
+      function stopDrag() {
+        document.removeEventListener('mousemove', onDrag);
+        document.removeEventListener('mouseup', stopDrag);
+      }
+    }
+
     function showLoading() {
       document.getElementById('loading').classList.remove('hidden');
     }
@@ -104,6 +126,12 @@
           valueDisplay.textContent = parseFloat(slider.value).toFixed(2);
         });
       }
+
+      // Make panels draggable
+      ['input-panel','tools-panel'].forEach(id => {
+        const panel = document.getElementById(id);
+        if (panel) makeDraggable(panel, panel.querySelector('.panel-header')||panel);
+      });
     });
   </script>
 </body>
